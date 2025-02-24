@@ -102,7 +102,7 @@ export default function AboutPage() {
   ];
 
   return (
-    <div ref={ref} className="relative min-h-screen bg-black text-gray-100 overflow-hidden">
+    <div ref={ref} className="relative min-h-screen bg-black text-gray-100 overflow-hidden border-t-8 border-green-300">
       <ParticleBackground />
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-24 space-y-12">
         <motion.h1 className="text-5xl font-bold text-center text-green-300 mb-16">
@@ -131,7 +131,7 @@ export default function AboutPage() {
               animate={{ opacity: 1, y: 0 }}
               whileHover={{ scale: 1.05, boxShadow: "0px 0px 20px rgba(0, 255, 0, 0.5)" }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-transparent p-6 rounded-lg shadow-lg transition-transform transform hover:scale-105"
+              className="bg-transparent p-6 rounded-lg shadow-lg transition-transform transform hover:scale-105 border border-green-300"
             >
               <h2 className="text-xl font-semibold text-green-300 mb-2">{item.title}</h2>
               <p className="text-gray-400">{item.description}</p>

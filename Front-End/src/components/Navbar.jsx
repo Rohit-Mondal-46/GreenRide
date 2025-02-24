@@ -32,7 +32,7 @@ export default function Navbar() {
     </motion.div>
 
       <div className="flex border border-green-600 rounded-full overflow-hidden">
-        {["Home", "Map", "About", "Contact"].map((item) => (
+        {["Home", "Map", "About", "SignUp"].map((item) => (
           <motion.div
             key={item}
             initial={{ opacity: 0, y: -10 }}
