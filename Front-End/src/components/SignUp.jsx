@@ -35,7 +35,7 @@ export default function SignUp() {
           />
           <input 
             type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password" required 
+            placeholder="Passwor" required 
             className="block w-full p-2 border rounded"
           />
           <button type="submit" className="w-full bg-green-500 text-white py-2 rounded">Sign Up</button>

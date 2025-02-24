@@ -26,7 +26,7 @@ export default function App() {
   return (
     <AuthProvider>
       <AppContextProvider>
-        <div className="bg-gray-100">
+        <div className="bg-black  ">
           <Navbar />
           <Routes>
             <Route path="/" element={<Home />} />

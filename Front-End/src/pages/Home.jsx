@@ -1,7 +1,7 @@
 import FeatureCards from "../components/FeatureCards";
 import HowItWorks from "../components/HowItWorks";
 import MapComponent from "../components/MapComponent";
-import Testimonials from "../components/Testimonials";
+// import Testimonials from "../components/Testimonials";
 import CallToAction from "../components/CallToAction";
 import { motion } from "framer-motion";
 import mountainride from "../assets/mountainride.jpg"; // Add
@@ -25,7 +25,7 @@ export default function Home() {
     <div className="relative z-10 flex flex-col items-center justify-center h-full text-center text-white bg-black bg-opacity-60 px-4">
       {/* Small Top Text */}
       <motion.p
-        className="text-lg font-semibold uppercase tracking-wider"
+        className="text-lg font-semibold uppercase tracking-wider bg"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1 }}
@@ -67,7 +67,7 @@ export default function Home() {
       <FeatureCards />
       <HowItWorks />
       <MapComponent />
-      <Testimonials />
+       
       <CallToAction />
     </div>
   );
