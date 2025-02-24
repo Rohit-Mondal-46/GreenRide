@@ -26,13 +26,13 @@ export default function FeatureCards() {
   ];
 
   return (
-    <section className="py-16 px-6 md:px-16 bg-gray-50">
+    <section className="py-16 px-6 md:px-16 bg-black text-white">
       <h2 className="text-4xl font-bold text-center mb-10">🚀 Why Choose Us?</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {features.map((feature, index) => (
           <motion.div 
             key={index} 
-            className="relative bg-white p-8 rounded-lg shadow-lg text-center overflow-hidden hover:shadow-2xl transition"
+            className="relative bg-transparent p-8 rounded-lg shadow-lg text-center overflow-hidden hover:shadow-5xl transition"
             whileHover={{ scale: 1.05 }}
           >
             <img src={feature.image} alt={feature.title} className="absolute inset-0 w-full h-full object-cover opacity-20" />

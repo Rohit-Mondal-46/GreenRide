@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 export default function CallToAction() {
   return (
-    <section className="bg-blue-600 text-white text-center py-16 px-8">
+    <section className="bg-gradient-to-r from-black via-gray-400 to-black text-white text-center py-20 px-8">
       <motion.h2 
         className="text-4xl font-extrabold"
         initial={{ opacity: 0, y: 20 }} 

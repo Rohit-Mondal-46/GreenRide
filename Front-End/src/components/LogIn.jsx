@@ -42,7 +42,9 @@ export default function LogIn() {
             className="block w-full p-2 border rounded"
           />
           <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded">Login</button>
+           
         </form>
+        
       </div>
     </div>
   );

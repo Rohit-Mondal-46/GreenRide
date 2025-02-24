@@ -25,7 +25,7 @@ export default function MapComponent() {
   }, []);
 
   return (
-    <section className="text-center py-10 bg-gray-100">
+    <section className="text-center py-10 bg-black text-white">
       <h2 className="text-3xl font-bold">🗺️ Plan Your Ride</h2>
       <p className="text-gray-600">Check routes and pollution levels before heading out.</p>
 
