@@ -193,3 +193,4 @@ const handleSearch = async () => {
     </div>
   );
 }
+}

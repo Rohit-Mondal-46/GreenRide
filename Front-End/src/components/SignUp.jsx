@@ -1,7 +1,57 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { signUp } from "../context/authService";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
+
+const Particle = () => {
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const particles = Array.from({ length: 50 }, (_, index) => ({
+    id: index,
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+  }));
+
+  return (
+    <div className="absolute inset-0 w-full h-full overflow-hidden z-0">
+      {particles.map((particle) => (
+        <motion.div
+          key={particle.id}
+          className="absolute w-1 h-1 bg-green-400 rounded-full"
+          style={{
+            left: particle.x,
+            top: particle.y,
+            filter: "drop-shadow(0 0 20px rgba(0, 255, 0, 1))",
+            opacity: 1,
+          }}
+          initial={{ opacity: 1 }}
+          animate={{
+            y: [-10, windowSize.height],
+            opacity: [1, 0.5, 0],
+          }}
+          transition={{
+            duration: Math.random() * 5 + 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
+  );
+};
 
 export default function SignUp() {
   const [email, setEmail] = useState("");
@@ -33,41 +83,42 @@ export default function SignUp() {
   };
 
   return (
-    <div className="bg-black/50 flex items-center justify-center min-h-screen px-4 sm:px-6">
-      <div className="relative p-6 sm:p-8 w-full max-w-md">
-        <div className="bg-white rounded-lg shadow p-5 sm:p-6">
-          <h3 className="text-2xl font-medium text-center mb-4">Sign Up</h3>
-          <p className="text-sm text-center text-slate-600 mb-6">
-            Create your account and get started.
-          </p>
+    <div className="relative w-full h-screen bg-black overflow-hidden">
+      <Particle />
+      <div className="bg-black/50 flex items-center justify-center min-h-screen px-4 sm:px-6 relative z-10">
+        <div className="relative p-6 sm:p-8 w-full max-w-md">
+          <div className="bg-white rounded-lg shadow p-5 sm:p-6">
+            <h3 className="text-2xl font-medium text-center mb-4">Sign Up</h3>
+            <p className="text-sm text-center text-slate-600 mb-6">
+              Create your account and get started.
+            </p>
 
-          <div className="flex flex-col gap-3">
-            <SocialButton provider="google" text="Continue with Google" />
-            <SocialButton provider="github" text="Continue with GitHub" />
-            <SocialButton provider="linkedin" text="Continue with LinkedIn" />
+            <div className="flex flex-col gap-3">
+              <SocialButton provider="google" text="Continue with Google" />
+            </div>
+
+            <div className="flex items-center gap-2 py-6 text-sm text-slate-600">
+              <div className="h-px w-full bg-slate-200"></div> OR <div className="h-px w-full bg-slate-200"></div>
+            </div>
+
+            {error && <p className="text-red-500 text-center">{error}</p>}
+            <form onSubmit={handleSubmit} className="w-full">
+              <InputField type="email" value={email} setValue={setEmail} placeholder="Email Address" disabled={loading} />
+              <InputField type="password" value={password} setValue={setPassword} placeholder="Password" disabled={loading} />
+              
+              <button 
+                type="submit" 
+                disabled={loading} 
+                className={`w-full mt-4 bg-black text-white py-3 rounded-lg text-sm sm:text-base font-medium focus:ring-2 focus:ring-black ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                {loading ? "Signing Up..." : "Sign Up"}
+              </button>
+            </form>
+
+            <p className="mt-6 text-center text-sm sm:text-base text-slate-600">
+              Already have an account? <Link to="/login" className="text-[#4285f4] font-medium">Login</Link>
+            </p>
           </div>
-
-          <div className="flex items-center gap-2 py-6 text-sm text-slate-600">
-            <div className="h-px w-full bg-slate-200"></div> OR <div className="h-px w-full bg-slate-200"></div>
-          </div>
-
-          {error && <p className="text-red-500 text-center">{error}</p>}
-          <form onSubmit={handleSubmit} className="w-full">
-            <InputField type="email" value={email} setValue={setEmail} placeholder="Email Address" disabled={loading} />
-            <InputField type="password" value={password} setValue={setPassword} placeholder="Password" disabled={loading} />
-            
-            <button 
-              type="submit" 
-              disabled={loading} 
-              className={`w-full mt-4 bg-black text-white py-3 rounded-lg text-sm sm:text-base font-medium focus:ring-2 focus:ring-black ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
-            >
-              {loading ? "Signing Up..." : "Sign Up"}
-            </button>
-          </form>
-
-          <p className="mt-6 text-center text-sm sm:text-base text-slate-600">
-            Already have an account? <Link to="/login" className="text-[#4285f4] font-medium">Login</Link>
-          </p>
         </div>
       </div>
     </div>
@@ -77,8 +128,6 @@ export default function SignUp() {
 function SocialButton({ provider, text }) {
   const icons = {
     google: "https://www.svgrepo.com/show/475656/google-color.svg",
-    github: "https://www.svgrepo.com/show/512317/github-142.svg",
-    linkedin: "https://www.svgrepo.com/show/448234/linkedin.svg",
   };
 
   return (
