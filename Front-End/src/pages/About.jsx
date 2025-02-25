@@ -1,18 +1,16 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll } from "framer-motion";
 
 function ParticleBackground() {
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    if (!canvasRef.current) return;
-
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!canvas) return;
 
+    const ctx = canvas.getContext("2d");
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
@@ -23,7 +21,7 @@ function ParticleBackground() {
       constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 2 + 0.1;
+        this.size = Math.random() * 2 + 0.5;
         this.speedX = Math.random() * 2 - 1;
         this.speedY = Math.random() * 2 - 1;
       }
@@ -39,7 +37,7 @@ function ParticleBackground() {
       }
 
       draw() {
-        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
@@ -70,42 +68,36 @@ function ParticleBackground() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  return <canvas ref={canvasRef} className="absolute inset-0 h-full w-full bg-black" />;
+  return <canvas ref={canvasRef} className="absolute inset-0 h-full w-full opacity-30" />;
 }
 
-export default function AboutPage() {
+export default function About() {
   const ref = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
-  });
-  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
 
   const headingText = "Discover Our Universe";
 
   const cardData = [
-    {
-      title: "Eco-Friendly Rides",
-      description:
-        "We offer electric bikes and scooters that help reduce pollution and promote a sustainable future.",
-    },
-    {
-      title: "Affordable & Efficient",
-      description:
-        "Save money while enjoying a hassle-free commute with our budget-friendly pricing plans.",
-    },
-    {
-      title: "Smart & Convenient",
-      description:
-        "Easily locate, unlock, and ride using our app, making urban travel seamless and accessible.",
-    },
+    { title: "Eco-Friendly Rides", description: "Electric bikes that reduce pollution & promote sustainability." },
+    { title: "Affordable & Efficient", description: "Budget-friendly commuting with hassle-free pricing plans." },
+    { title: "Smart & Convenient", description: "Locate, unlock, & ride using our AI-powered app for seamless travel." },
+    { title: "Real-Time Air Quality", description: "Live updates to help you pick the safest cycling routes." },
+    { title: "Secure & Reliable", description: "GPS tracking & smart locks for a safe ride experience." },
+    { title: "Community Driven", description: "Join thousands of riders contributing to a sustainable world." },
   ];
 
   return (
-    <div ref={ref} className="relative min-h-screen bg-black text-gray-100 overflow-hidden border-t-8 border-green-300">
+    <div ref={ref} className="relative min-h-screen bg-black text-gray-100 flex flex-col items-center justify-center">
       <ParticleBackground />
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-24 space-y-12">
-        <motion.h1 className="text-5xl font-bold text-center text-green-300 mb-16">
+      <div className="relative z-10 max-w-6xl mx-auto px-6 py-24">
+        
+        {/* Animated Heading */}
+        <motion.h1 
+          className="text-5xl font-bold text-center text-green-300 mb-12"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+        >
           {headingText.split(" ").map((word, wordIndex) => (
             <span key={wordIndex} className="inline-block mr-2">
               {word.split("").map((letter, letterIndex) => (
@@ -113,7 +105,7 @@ export default function AboutPage() {
                   key={letterIndex}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: (wordIndex * 3 + letterIndex) * 0.1 }}
+                  transition={{ duration: 0.5, delay: (wordIndex * 3 + letterIndex) * 0.05 }}
                   className="inline-block"
                 >
                   {letter}
@@ -123,15 +115,20 @@ export default function AboutPage() {
           ))}
         </motion.h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Feature Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {cardData.map((item, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
-              whileHover={{ scale: 1.05, boxShadow: "0px 0px 20px rgba(0, 255, 0, 0.5)" }}
+              whileHover={{
+                scale: 1.05,
+                boxShadow: "0px 0px 25px rgba(0, 255, 0, 0.7)",
+                backgroundColor: "rgba(0, 255, 0, 0.1)",
+              }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-transparent p-6 rounded-lg shadow-lg transition-transform transform hover:scale-105 border border-green-300"
+              className="bg-black/30 p-6 rounded-lg shadow-lg border border-green-400 text-center hover:bg-green-900/20 transition-all"
             >
               <h2 className="text-xl font-semibold text-green-300 mb-2">{item.title}</h2>
               <p className="text-gray-400">{item.description}</p>
