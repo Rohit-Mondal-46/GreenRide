@@ -8,6 +8,7 @@ import LogIn from "./components/LogIn";
 import SignUp from "./components/SignUp";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { AppContextProvider } from "./context/AppContext";
+import BestRouteVisualization from "./pages/BestRouteVisualization";
 
 // Protect routes that require authentication
 function PrivateRoute({ children }) {
@@ -38,6 +39,14 @@ export default function App() {
                 element={
                   <PrivateRoute>
                     <Map />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/bestRoute"
+                element={
+                  <PrivateRoute>
+                    <BestRouteVisualization />
                   </PrivateRoute>
                 }
               />

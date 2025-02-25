@@ -1,9 +1,11 @@
 import map_char from "../assets/map_char.jpg";
+
 "use client";
+
 import { useEffect, useRef, useState } from "react";
 import { motion, useScroll } from "framer-motion";
-import axios from "axios";
-import dotenv from "dotenv"
+import axios from 'axios'
+import { useNavigate } from "react-router-dom";
 
 
 function ParticleBackground() {
@@ -82,45 +84,62 @@ export default function About() {
   const api_key = import.meta.env.VITE_GEOCODE_API_KEY;
   const [startLatLng,setStartLatLng] = useState({});
   const [endLatLng,setEndLatLng] = useState({});
-  const [aqi, setAqi] = useState([])
-  
-  const findGeocode = async (location) =>{
-    const url = `https://api.opencagedata.com/geocode/v1/json?q=${location}&key=${api_key}&language=en&pretty=1`
+  const [route, setRoute] = useState({})
+  const navigate = useNavigate();
+
+
+  const findGeocode = async (location) => {
+    const url = `https://api.opencagedata.com/geocode/v1/json?q=${location}&key=${api_key}&language=en&pretty=1`;
     const response = await axios.get(url);
-    console.log(response.data.results[0].geometry);
- }
-
- const fetchAqiData = async () => {
-      
-  try {
-    const response = await axios.post('http://localhost:3000/api/routes/optimize', {
-      startPoint: {
-        lat: startLatLng.lat,
-        lng: startLatLng.lng
-      },
-      endPoint: {
-        lat: endLatLng.lat,
-        lng: endLatLng.lng
-      },
-      mode: 'walking'
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    });
     
-    // console.log('Optimized route response:', response.data);
-    setAqi(response);
-  } catch (error) {
-    console.error('Error optimizing route:', error);
-  }
-
- const handleSearch = () => {
-  //  alert(`Searching route from ${startPoint} to ${endPoint}`);
-   setStartLatLng(findGeocode(startPoint));
-   setEndLatLng(findGeocode(endPoint));
+    // Return the geometry of the location (lat and lng)
+    return response.data.results[0].geometry;
   };
+
+
+  const fetchAqiData = async () => {
+      
+    try {
+      const response = await axios.post('http://localhost:3000/api/routes/optimize', {
+        startPoint: {
+          lat: startLatLng.lat,
+          lng: startLatLng.lng
+        },
+        endPoint: {
+          lat: endLatLng.lat,
+          lng: endLatLng.lng
+        },
+        mode: 'walking'
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      
+      console.log('Optimized route response:', response.data);
+      setRoute(response.data);
+    } catch (error) {
+      console.error('Error optimizing route:', error);
+    }
+}  
+
+const handleSearch = async () => {
+  try {
+    const startLatLngResult = await findGeocode(startPoint);
+    const endLatLngResult = await findGeocode(endPoint);
+
+    setStartLatLng(startLatLngResult);
+    setEndLatLng(endLatLngResult);
+
+    console.log(startLatLng.lat);
+    
+    await fetchAqiData();
+    navigate('/bestRoute')
+  } catch (error) {
+    console.error("Error fetching geocode or AQI data:", error);
+  }
+};
 
   return (
     <div ref={ref} className="relative min-h-screen bg-black text-gray-100 flex items-center justify-center">
