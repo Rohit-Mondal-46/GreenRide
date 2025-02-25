@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Map from "./pages/Map";
@@ -8,41 +8,44 @@ import LogIn from "./components/LogIn";
 import SignUp from "./components/SignUp";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { AppContextProvider } from "./context/AppContext";
-import { useEffect } from "react";
-
 
 // Protect routes that require authentication
 function PrivateRoute({ children }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  const location = useLocation();
 
-  useEffect(() => {
-    console.log("Current User:", user); //  Debugging user state
-  }, [user]);
+  if (loading) return <p className="text-white text-center">Loading...</p>;
 
-  return user ? children : <Navigate to="/login" />;
+  return user ? children : <Navigate to="/login" state={{ from: location }} />;
 }
 
 export default function App() {
   return (
     <AuthProvider>
       <AppContextProvider>
-        <div className="bg-black  ">
+        <div className="bg-black min-h-screen flex flex-col">
           <Navbar />
-          <Routes>
-            <Route path="*" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/login" element={<LogIn />} />
-            <Route path="/signup" element={<SignUp />} />
-            
-            <Route
-              path="/map"
-              element={
-                <PrivateRoute>
-                  <Map />
-                </PrivateRoute>
-              }
-            />
-          </Routes>
+          <div className="flex-grow">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/login" element={<LogIn />} />
+              <Route path="/signup" element={<SignUp />} />
+
+              {/* Protected Routes */}
+              <Route
+                path="/map"
+                element={
+                  <PrivateRoute>
+                    <Map />
+                  </PrivateRoute>
+                }
+              />
+
+              {/* Redirect all unknown routes to Home */}
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </div>
           <Footer />
         </div>
       </AppContextProvider>
