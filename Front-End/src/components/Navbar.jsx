@@ -37,7 +37,7 @@ export default function Navbar() {
         {/* Desktop Nav Links */}
         <div className="hidden md:flex justify-center items-center">
           <div className="flex border border-green-600 rounded-full overflow-hidden">
-            {["Home", "Map", "About", "Contact"].map((item) => (
+            {["Home", "Map", "About", "Signup"].map((item) => (
               <motion.div
                 key={item}
                 initial={{ opacity: 0, y: -10 }}
@@ -73,7 +73,7 @@ export default function Navbar() {
           transition={{ duration: 0.4 }}
           className="md:hidden mt-4"
         >
-          {["Home", "Map", "About", "Contact"].map((item) => (
+          {["Home", "Map", "About", "Signup"].map((item) => (
             <Link
               key={item}
               to={`/${item.toLowerCase()}`}
