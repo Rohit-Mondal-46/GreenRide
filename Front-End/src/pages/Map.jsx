@@ -3,8 +3,6 @@ import map_char from "../assets/map_char.jpg";
 import { useEffect, useRef, useState } from "react";
 import { motion, useScroll } from "framer-motion";
 import axios from "axios";
-import dotenv from "dotenv"
-
 
 function ParticleBackground() {
   const canvasRef = useRef(null);
@@ -80,53 +78,57 @@ export default function About() {
   const [startPoint, setStartPoint] = useState("");
   const [endPoint, setEndPoint] = useState("");
   const api_key = import.meta.env.VITE_GEOCODE_API_KEY;
-  const [startLatLng,setStartLatLng] = useState({});
-  const [endLatLng,setEndLatLng] = useState({});
-  const [aqi, setAqi] = useState([])
-  
-  const findGeocode = async (location) =>{
-    const url = `https://api.opencagedata.com/geocode/v1/json?q=${location}&key=${api_key}&language=en&pretty=1`
-    const response = await axios.get(url);
-    console.log(response.data.results[0].geometry);
- }
+  const [startLatLng, setStartLatLng] = useState(null);
+  const [endLatLng, setEndLatLng] = useState(null);
+  const [aqi, setAqi] = useState([]);
 
- const fetchAqiData = async () => {
-      
-  try {
-    const response = await axios.post('http://localhost:3000/api/routes/optimize', {
-      startPoint: {
-        lat: startLatLng.lat,
-        lng: startLatLng.lng
-      },
-      endPoint: {
-        lat: endLatLng.lat,
-        lng: endLatLng.lng
-      },
-      mode: 'walking'
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    });
-    
-    // console.log('Optimized route response:', response.data);
-    setAqi(response);
-  } catch (error) {
-    console.error('Error optimizing route:', error);
-  }
+  const findGeocode = async (location) => {
+    try {
+      const url = `https://api.opencagedata.com/geocode/v1/json?q=${location}&key=${api_key}&language=en&pretty=1`;
+      const response = await axios.get(url);
+      return response.data.results[0].geometry;
+    } catch (error) {
+      console.error("Geocode fetch error:", error);
+      return null;
+    }
+  };
 
- const handleSearch = () => {
-  //  alert(`Searching route from ${startPoint} to ${endPoint}`);
-   setStartLatLng(findGeocode(startPoint));
-   setEndLatLng(findGeocode(endPoint));
+  const fetchAqiData = async () => {
+    if (!startLatLng || !endLatLng) return;
+
+    try {
+      const response = await axios.post('http://localhost:3000/api/routes/optimize', {
+        startPoint: startLatLng,
+        endPoint: endLatLng,
+        mode: 'walking'
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      setAqi(response.data);
+    } catch (error) {
+      console.error('Error optimizing route:', error);
+    }
+  };
+
+  const handleSearch = async () => {
+    try {
+      const startGeo = await findGeocode(startPoint);
+      const endGeo = await findGeocode(endPoint);
+      setStartLatLng(startGeo);
+      setEndLatLng(endGeo);
+      if (startGeo && endGeo) fetchAqiData();
+    } catch (error) {
+      console.error("Geocoding error:", error);
+    }
   };
 
   return (
     <div ref={ref} className="relative min-h-screen bg-black text-gray-100 flex items-center justify-center">
       <ParticleBackground />
       <div className="relative z-10 max-w-6xl mx-auto px-6 py-24 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-        {/* Left Side - Input Fields and Button */}
         <div className="flex flex-col gap-4">
           <motion.h1
             className="text-4xl font-bold text-green-300"
@@ -161,7 +163,6 @@ export default function About() {
           </button>
         </div>
 
-        {/* Right Side - Animated Image */}
         <motion.div
           className="flex justify-center items-center"
           initial={{ scale: 0.8, opacity: 0 }}
