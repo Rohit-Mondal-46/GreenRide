@@ -1,22 +1,23 @@
 {
-  "name": "back-end",
+  "name": "health-route-optimizer",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "type": "module",
+  "description": "A route optimization system that considers air quality for healthier travel routes",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js",
-    "start": "node index.js"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^4.18.2",
+    "dotenv": "^16.3.1",
+    "pg": "^8.11.3",
+    "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0",
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.0.2",
+    "jest": "^29.7.0"
   }
-}
+} 
