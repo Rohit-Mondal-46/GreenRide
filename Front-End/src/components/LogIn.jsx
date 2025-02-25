@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { logIn } from "../context/authService";
+import { logIn, logInWithGoogle } from "../context/authService";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -9,33 +9,53 @@ export default function Login() {
   const [error, setError] = useState("");
   const { user, setUser } = useAuth();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
       navigate("/"); // ✅ Redirect logged-in users to Home
     } else {
-      setLoading(false);
+      setPageLoading(false);
     }
   }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(""); // Clear previous errors
+    setLoading(true);
 
     const loggedInUser = await logIn(email, password);
 
     if (loggedInUser && !loggedInUser.error) {
-      setUser(loggedInUser);
+      setUser(loggedInUser.user);
       alert("Successfully logged in!");
       navigate("/"); // ✅ Redirect after login
     } else {
       setError(loggedInUser.error || "Login failed");
     }
+    setLoading(false);
   };
 
-  if (loading) {
+  // 🔹 Google Login Handler
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError("");
+
+    const googleUser = await logInWithGoogle();
+
+    if (googleUser && !googleUser.error) {
+      setUser(googleUser.user);
+      alert("Successfully logged in with Google!");
+      navigate("/");
+    } else {
+      setError(googleUser.error || "Google login failed");
+    }
+    setLoading(false);
+  };
+
+  if (pageLoading) {
     return <div className="text-center mt-10 text-gray-600">Loading...</div>;
   }
 
@@ -50,17 +70,13 @@ export default function Login() {
 
           {/* Social Login Options */}
           <div className="flex flex-col gap-3">
-            <button className="flex items-center justify-center gap-2 border border-slate-300 bg-white p-2 text-sm sm:text-base font-medium text-black rounded-lg">
-              <img src="https://www.svgrepo.com/show/512317/github-142.svg" alt="GitHub" className="h-5 w-5" />
-              Continue with GitHub
-            </button>
-            <button className="flex items-center justify-center gap-2 border border-slate-300 bg-white p-2 text-sm sm:text-base font-medium text-black rounded-lg">
+            <button
+              className="flex items-center justify-center gap-2 border border-slate-300 bg-white p-2 text-sm sm:text-base font-medium text-black rounded-lg"
+              onClick={handleGoogleLogin}
+              disabled={loading}
+            >
               <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="h-5 w-5" />
               Continue with Google
-            </button>
-            <button className="flex items-center justify-center gap-2 border border-slate-300 bg-white p-2 text-sm sm:text-base font-medium text-black rounded-lg">
-              <img src="https://www.svgrepo.com/show/448234/linkedin.svg" alt="LinkedIn" className="h-5 w-5" />
-              Continue with LinkedIn
             </button>
           </div>
 
@@ -94,8 +110,12 @@ export default function Login() {
             <p className="text-sm sm:text-base text-gray-500 mt-2">
               <a href="/forgot-password" className="text-blue-800 hover:text-blue-600">Reset your password?</a>
             </p>
-            <button type="submit" className="w-full mt-4 bg-black text-white py-3 rounded-lg text-sm sm:text-base font-medium focus:ring-2 focus:ring-black">
-              Continue
+            <button
+              type="submit"
+              className="w-full mt-4 bg-black text-white py-3 rounded-lg text-sm sm:text-base font-medium focus:ring-2 focus:ring-black"
+              disabled={loading}
+            >
+              {loading ? "Signing in..." : "Continue"}
             </button>
           </form>
 
