@@ -1,5 +1,4 @@
-// src/components/LogIn.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { logIn } from "../context/authService";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -8,22 +7,37 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { setUser } = useAuth();
+  const { user, setUser } = useAuth();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/"); // ✅ Redirect logged-in users to Home
+    } else {
+      setLoading(false);
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(""); // Clear previous errors
-    const user = await logIn(email, password);
 
-    if (user && !user.error) {
-      setUser(user);
+    const loggedInUser = await logIn(email, password);
+
+    if (loggedInUser && !loggedInUser.error) {
+      setUser(loggedInUser);
       alert("Successfully logged in!");
-      navigate("/map");
+      navigate("/"); // ✅ Redirect after login
     } else {
-      setError(user.error || "Login failed");
+      setError(loggedInUser.error || "Login failed");
     }
   };
+
+  if (loading) {
+    return <div className="text-center mt-10 text-gray-600">Loading...</div>;
+  }
 
   return (
     <div className="bg-black/50 flex items-center justify-center min-h-screen px-4 sm:px-6">
@@ -31,7 +45,7 @@ export default function Login() {
         <div className="bg-white rounded-lg shadow p-5 sm:p-6">
           <h3 className="text-2xl font-medium text-center mb-4">Login to your account</h3>
           <p className="text-sm text-center text-slate-600 mb-6">
-            You must be logged in to perform this action.
+            You must be logged in to access your account.
           </p>
 
           {/* Social Login Options */}

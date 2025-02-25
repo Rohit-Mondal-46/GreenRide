@@ -1,6 +1,6 @@
-// src/components/SignUp.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signUp } from "../context/authService";
+import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function SignUp() {
@@ -8,27 +8,43 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { user, setUser } = useAuth();
+  const [loading, setLoading] = useState(true);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/"); // ✅ Redirect logged-in users to home
+    } else {
+      setLoading(false);
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // Clear errors before new submission
-    const user = await signUp(email, password);
+    setError(""); // Clear previous errors
 
-    if (user && !user.error) {
-      alert("Sign up successful! Please log in.");
-      navigate("/login"); 
+    const newUser = await signUp(email, password);
+    if (newUser && !newUser.error) {
+      setUser(newUser);
+      alert("Sign up successful! Redirecting...");
+      navigate("/"); // ✅ Redirect after sign-up
     } else {
-      setError(user.error || "Signup failed");
+      setError(newUser.error || "Signup failed");
     }
   };
+
+  if (loading) {
+    return <div className="text-center mt-10 text-gray-600">Loading...</div>;
+  }
 
   return (
     <div className="bg-black/50 flex items-center justify-center min-h-screen px-4 sm:px-6">
       <div className="relative p-6 sm:p-8 w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl">
         <div className="bg-white rounded-lg shadow p-5 sm:p-6">
-          <h3 className="text-2xl font-medium text-center mb-4">Sign-up</h3>
+          <h3 className="text-2xl font-medium text-center mb-4">Sign Up</h3>
           <p className="text-sm text-center text-slate-600 mb-6">
-           
+            Create your account and get started.
           </p>
 
           {/* Social Login Options */}
@@ -53,7 +69,7 @@ export default function SignUp() {
             <div className="h-px w-full bg-slate-200"></div>
           </div>
 
-          {/* Email & Password Login */}
+          {/* Email & Password Sign-Up */}
           {error && <p className="text-red-500 text-center">{error}</p>}
           <form onSubmit={handleSubmit} className="w-full">
             <input 
@@ -74,16 +90,13 @@ export default function SignUp() {
               className="mt-2 block w-full rounded-lg border border-gray-300 px-3 py-2 sm:py-3 text-sm sm:text-base shadow-sm outline-none placeholder-gray-400 focus:ring-2 focus:ring-black"
               placeholder="Password" 
             />
-            <p className="text-sm sm:text-base text-gray-500 mt-2">
-              <a href="/forgot-password" className="text-blue-800 hover:text-blue-600">Reset your password?</a>
-            </p>
             <button type="submit" className="w-full mt-4 bg-black text-white py-3 rounded-lg text-sm sm:text-base font-medium focus:ring-2 focus:ring-black">
-              Continue
+              Sign Up
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm sm:text-base text-slate-600">
-            Already have account? <a href="/login" className="text-[#4285f4] font-medium">Login</a>
+            Already have an account? <a href="/login" className="text-[#4285f4] font-medium">Login</a>
           </p>
         </div>
       </div>
