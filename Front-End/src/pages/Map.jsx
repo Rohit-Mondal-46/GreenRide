@@ -1,5 +1,6 @@
 import map_char from "../assets/map_char.jpg";
 
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";
