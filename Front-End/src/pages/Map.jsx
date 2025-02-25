@@ -1,10 +1,10 @@
 import map_char from "../assets/map_char.jpg";
-
-
 "use client";
-
 import { useEffect, useRef, useState } from "react";
 import { motion, useScroll } from "framer-motion";
+import axios from "axios";
+import dotenv from "dotenv"
+
 
 function ParticleBackground() {
   const canvasRef = useRef(null);
@@ -77,12 +77,49 @@ function ParticleBackground() {
 export default function About() {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-
   const [startPoint, setStartPoint] = useState("");
   const [endPoint, setEndPoint] = useState("");
+  const api_key = import.meta.env.VITE_GEOCODE_API_KEY;
+  const [startLatLng,setStartLatLng] = useState({});
+  const [endLatLng,setEndLatLng] = useState({});
+  const [aqi, setAqi] = useState([])
+  
+  const findGeocode = async (location) =>{
+    const url = `https://api.opencagedata.com/geocode/v1/json?q=${location}&key=${api_key}&language=en&pretty=1`
+    const response = await axios.get(url);
+    console.log(response.data.results[0].geometry);
+ }
 
-  const handleSearch = () => {
-    alert(`Searching route from ${startPoint} to ${endPoint}`);
+ const fetchAqiData = async () => {
+      
+  try {
+    const response = await axios.post('http://localhost:3000/api/routes/optimize', {
+      startPoint: {
+        lat: startLatLng.lat,
+        lng: startLatLng.lng
+      },
+      endPoint: {
+        lat: endLatLng.lat,
+        lng: endLatLng.lng
+      },
+      mode: 'walking'
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
+    
+    // console.log('Optimized route response:', response.data);
+    setAqi(response);
+  } catch (error) {
+    console.error('Error optimizing route:', error);
+  }
+
+ const handleSearch = () => {
+  //  alert(`Searching route from ${startPoint} to ${endPoint}`);
+   setStartLatLng(findGeocode(startPoint));
+   setEndLatLng(findGeocode(endPoint));
   };
 
   return (
@@ -136,4 +173,5 @@ export default function About() {
       </div>
     </div>
   );
+}
 }

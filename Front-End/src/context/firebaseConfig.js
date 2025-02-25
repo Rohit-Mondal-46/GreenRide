@@ -1,9 +1,10 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { getAnalytics, isSupported } from "firebase/analytics"; 
+import { getAnalytics, isSupported } from "firebase/analytics";
 
+// ✅ Firebase configuration using Vite environment variables
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -14,23 +15,29 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase
+// ✅ Initialize Firebase App
 const app = initializeApp(firebaseConfig);
 
-// Initialize Analytics only if supported
-let analytics;
+// ✅ Initialize Firebase Services
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
+
+// ✅ Google Auth Provider with Forced Account Selection
+export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: "select_account" });
+
+// ✅ Initialize Firebase Analytics (Only if Supported)
+export let analytics = null;
 isSupported()
   .then((supported) => {
     if (supported) {
       analytics = getAnalytics(app);
+      console.log("✅ Firebase Analytics initialized");
+    } else {
+      console.warn("⚠️ Firebase Analytics not supported on this device.");
     }
   })
-  .catch((err) => console.warn("Firebase Analytics not supported:", err));
-
-// Export Firebase services
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
-export { analytics };
+  .catch((err) => console.error("❌ Error initializing Firebase Analytics:", err));
 
 export default app;
