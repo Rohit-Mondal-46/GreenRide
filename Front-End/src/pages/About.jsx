@@ -68,7 +68,7 @@ function ParticleBackground() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  return <canvas ref={canvasRef} className="absolute inset-0 h-full w-full opacity-30" />;
+  return <canvas ref={canvasRef} className="absolute inset-0 h-full w-full opacity-1000" />;
 }
 
 export default function About() {
