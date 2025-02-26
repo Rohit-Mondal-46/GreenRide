@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getOptimizedRoutes, getRouteById } = require('../services/routeService');
+const { getOptimizedRoutes, getRouteById, getAQiDataForASinglePoint } = require('../services/routeService');
 const { validateRouteRequest } = require('../middleware/validation');
 
 
@@ -50,6 +50,27 @@ router.get('/route/:id', async (req, res, next) => {
     next(error);
   }
 });
+
+//Single location AQI
+router.post('/getAqiValue', async (req, res, next) => {
+  try {
+    const { location } = req.body;
+    // console.log(location);
+    
+    // Validate required parameters
+    if (!location?.lat || !location?.lng) {
+      return res.status(400).json({ 
+        error: 'Missing required parameters. Request body should include startPoint: {lat, lng}, endPoint: {lat, lng}, and mode.' 
+      });
+    }
+
+    const aqi = await getAQiDataForASinglePoint(location);
+    res.json(aqi);
+  } catch (error) {
+    next(error); 
+  }
+});
+
 
 // Handle root route
 router.get('/', (req, res) => {

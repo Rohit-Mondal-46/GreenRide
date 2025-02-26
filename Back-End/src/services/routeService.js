@@ -163,6 +163,17 @@ const getAQIDataForRoute = async (route) => {
   }
 };
 
+const getAQiDataForASinglePoint = async (location)=>{
+  try {
+    const res = await axios.get(`${OPENWEATHERMAP_BASE_URL}${location.lat};${location.lng}/?token=${process.env.WAQI_API_KEY}`);
+    // console.log(res);
+    
+    return res.data.data.aqi;
+  } catch (error) {
+    console.error('Error fetching AQI data:', error);
+    throw error;
+  }
+}
 
 const calculateHealthScore = (aqiData, mode) => {
   // If not enough AQI data points, return null or a high score
@@ -349,5 +360,6 @@ module.exports = {
   fetchRoutes,
   getAQIDataForRoute,
   calculateHealthScore,
-  sampleRoutePoints
+  sampleRoutePoints,
+  getAQiDataForASinglePoint
 }; 
