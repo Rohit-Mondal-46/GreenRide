@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from "react-router-dom";
 import { motion } from 'framer-motion';
 import { 
   Bike,
@@ -64,24 +65,31 @@ const Footer = () => {
             </div>
           </motion.div>
 
-          {/* Quick Links */}
-          <motion.div 
-            className="space-y-4"
-            variants={childVariants}
-          >
-            <h3 className="text-lg lg:text-xl font-bold">Quick Links</h3>
-            <ul className="space-y-2 text-sm lg:text-base">
-              {['Home', 'About ',    'Contact Support'].map((link) => (
-                <motion.li 
-                  key={link}
-                  whileHover={{ x: 5 }}
-                  className="cursor-pointer hover:text-blue-400 transition-colors duration-200"
-                >
-                  {link}
-                </motion.li>
-              ))}
-            </ul>
-          </motion.div>
+         
+
+{/* Quick Links */}
+<motion.div 
+  className="space-y-4"
+  variants={childVariants}
+>
+  <h3 className="text-lg lg:text-xl font-bold">Quick Links</h3>
+  <ul className="space-y-2 text-sm lg:text-base">
+    {[
+      { name: "Home", path: "/" },
+      { name: "About", path: "/about" },
+      { name: "Contact Support", path: "" }
+    ].map(({ name, path }) => (
+      <motion.li 
+        key={name}
+        whileHover={{ x: 5 }}
+        className="cursor-pointer hover:text-blue-400 transition-colors duration-200"
+      >
+        <Link to={path}>{name}</Link>
+      </motion.li>
+    ))}
+  </ul>
+</motion.div>
+
 
           {/* Social Media */}
           <motion.div 

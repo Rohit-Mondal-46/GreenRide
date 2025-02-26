@@ -1,20 +1,17 @@
 const { Pool } = require('pg');
+const dotenv = require('dotenv');
+dotenv.config();
 
-// const pool = new Pool({
-//   user: process.env.POSTGRES_USER,
-//   password: process.env.POSTGRES_PASSWORD,
-//   host: process.env.POSTGRES_HOST,
-//   port: process.env.POSTGRES_PORT,
-//   database: process.env.POSTGRES_DB,
-// });
+
+
 const pool = new Pool({
-  user: 'postgres',
-  password: 'newpassword',
-  host: 'localhost',
-  port: '5432',
-  database: 'health_route_db',
+  user: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
+  host: process.env.POSTGRES_HOST,
+  port: process.env.POSTGRES_PORT,
+  database: process.env.POSTGRES_DB,
 });
-// console.log(pool);
+
 
 const initializeDatabase = async () => {
   const client = await pool.connect();

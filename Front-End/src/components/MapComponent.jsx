@@ -1,32 +1,26 @@
 import { useState } from "react";
+import axios from "axios";
 import { Player } from "@lottiefiles/react-lottie-player";
 import { motion } from "framer-motion";
 import bikeMapAnimation from "../assets/bike-map.json"; // Lottie animation
 
 export default function MapComponent() {
-  const [startLocation, setStartLocation] = useState("");
-  const [dropLocation, setDropLocation] = useState("");
-  const [startCoords, setStartCoords] = useState(null);
-  const [dropCoords, setDropCoords] = useState(null);
-  const [startAqi, setStartAqi] = useState(null);
-  const [dropAqi, setDropAqi] = useState(null);
+  const [location, setLocation] = useState("");
+  const [aqi, setAqi] = useState(null);
   const [error, setError] = useState(null);
-  const apiKey = import.meta.env.VITE_AIR_QUALITY_API; // AQI API Key
-  const geocodeApiKey = import.meta.env.VITE_GEOCODING_API; // Google Geocoding API Key
+  const geocodeApiKey = import.meta.env.VITE_GEOCODING_API;
 
-  // Convert location names to lat/lon using Geocoding API
-  const fetchCoordinates = async (location, type) => {
+  const fetchCoordinatesAndAqi = async () => {
     try {
-      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${geocodeApiKey}`;
-      const response = await fetch(geocodeUrl);
-      const data = await response.json();
-
-      if (data.status === "OK") {
-        const { lat, lng } = data.results[0].geometry.location;
-        if (type === "start") setStartCoords({ lat, lon: lng });
-        else setDropCoords({ lat, lon: lng });
-
-        fetchAqiData(lat, lng, type);
+      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+        location
+      )}&key=${geocodeApiKey}`;
+      
+      const response = await axios.get(geocodeUrl);
+      
+      if (response.data.status === "OK") {
+        const { lat, lng } = response.data.results[0].geometry.location;
+        fetchAqiData(lat, lng);
       } else {
         throw new Error("Invalid location entered.");
       }
@@ -36,40 +30,27 @@ export default function MapComponent() {
     }
   };
 
-  // Fetch AQI for the given coordinates
-  const fetchAqiData = async (lat, lon, type) => {
-    if (!apiKey) {
-      setError("API key is missing! Check your .env file.");
-      return;
-    }
-
-    const url = `https://api.airvisual.com/v2/nearest_city?lat=${lat}&lon=${lon}&key=${apiKey}`;
-
+  const fetchAqiData = async (lat, lng) => {
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Failed to fetch AQI data");
+      const response = await axios.post(
+        "http://localhost:3000/api/routes/getAqiValue",
+        { startPoint: { lat, lng } },
+        { headers: { "Content-Type": "application/json", Accept: "application/json" } }
+      );
 
-      const data = await response.json();
-      const aqi = data.data.current.pollution.aqius;
-
-      if (type === "start") setStartAqi(aqi);
-      else setDropAqi(aqi);
+      setAqi(response.data.aqi);
     } catch (err) {
       setError("Error fetching AQI data.");
       console.error(err);
     }
   };
 
-  // Handle Location Submission
   const handleSubmit = (e) => {
     e.preventDefault();
     setError(null);
-
-    if (startLocation) fetchCoordinates(startLocation, "start");
-    if (dropLocation) fetchCoordinates(dropLocation, "drop");
+    if (location) fetchCoordinatesAndAqi();
   };
 
-  // Dynamic AQI color function
   const getAqiColor = (aqi) => {
     if (aqi <= 50) return "text-green-400";
     if (aqi <= 100) return "text-yellow-400";
@@ -86,83 +67,70 @@ export default function MapComponent() {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        🗺️ Plan Your Ride
+        🗺️ Check AQI for Your Location
       </motion.h2>
 
-      <motion.p
-        className="text-lg text-gray-400 transition-all duration-300 group-hover:text-white"
-        initial={{ opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 0.3 }}
-      >
-        Enter your start and destination to check pollution levels.
-      </motion.p>
-
-      {/* Lottie Animation */}
       <motion.div
         className="flex justify-center mt-6"
         whileHover={{ scale: 1.05 }}
         transition={{ duration: 0.4 }}
       >
-        <Player autoplay loop src={bikeMapAnimation} className="w-2/3 md:w-1/3" />
+        <Player autoplay loop src={bikeMapAnimation} className="w-full md:w-2/3 lg:w-1/2" />
       </motion.div>
 
-      {/* Location Input Form */}
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        <input
-          type="text"
-          placeholder="Enter start location"
-          value={startLocation}
-          onChange={(e) => setStartLocation(e.target.value)}
-          className="w-2/3 md:w-1/3 p-2 border border-gray-500 rounded-lg bg-gray-800 text-white focus:outline-none focus:border-green-400"
-        />
-        <input
-          type="text"
-          placeholder="Enter drop location"
-          value={dropLocation}
-          onChange={(e) => setDropLocation(e.target.value)}
-          className="w-2/3 md:w-1/3 p-2 border border-gray-500 rounded-lg bg-gray-800 text-white focus:outline-none focus:border-green-400"
-        />
-        <button
-          type="submit"
-          className="px-4 py-2 bg-green-500 rounded-lg text-white hover:bg-green-600 transition"
-        >
-          Check AQI
-        </button>
-      </form>
+      <motion.div
+        className="mt-6"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="flex flex-col gap-4 items-center">
+            <input
+              type="text"
+              placeholder="Enter Your Location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-2/3 md:w-1/3 p-2 border border-gray-500 rounded-lg bg-gray-800 text-white focus:outline-none focus:border-green-400"
+            />
+            <motion.button
+              type="submit"
+              className="px-4 py-2 bg-green-500 rounded-lg text-white font-bold transition relative 
+             hover:bg-green-500 hover:shadow-green-400 hover:shadow-lg"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.1, boxShadow: "0px 0px 15px #22c55e" }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
+              Check AQI
+            </motion.button>
+          </div>
+        </form>
+      </motion.div>
 
-      {/* Display AQI Results */}
       {error && <p className="text-red-400 mt-4">{error}</p>}
 
-      <div className="mt-6">
-        {startAqi !== null && (
+      <motion.div
+        className="mt-6"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, delay: 0.4 }}
+      >
+        {aqi !== null && (
           <motion.p
             className="text-xl transition-transform duration-300 group-hover:scale-110"
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.5 }}
           >
-            🚀 Start Location AQI:{" "}
-            <strong className={`${getAqiColor(startAqi)} transition-all duration-300`}>
-              {startAqi}
+            🌍 AQI at {location}: {" "}
+            <strong className={`${getAqiColor(aqi)} transition-all duration-300`}>
+              {aqi}
             </strong>
           </motion.p>
         )}
-
-        {dropAqi !== null && (
-          <motion.p
-            className="text-xl transition-transform duration-300 group-hover:scale-110 mt-4"
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.5 }}
-          >
-            🏁 Destination AQI:{" "}
-            <strong className={`${getAqiColor(dropAqi)} transition-all duration-300`}>
-              {dropAqi}
-            </strong>
-          </motion.p>
-        )}
-      </div>
+      </motion.div>
     </section>
   );
 }
