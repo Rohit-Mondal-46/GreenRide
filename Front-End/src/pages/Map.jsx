@@ -1,8 +1,12 @@
 import map_char from "../assets/map_char.jpg";
+
 "use client";
+
 import { useEffect, useRef, useState } from "react";
 import { motion, useScroll } from "framer-motion";
-import axios from "axios";
+import axios from 'axios'
+import { useNavigate } from "react-router-dom";
+
 
 function ParticleBackground() {
   const canvasRef = useRef(null);
@@ -78,28 +82,33 @@ export default function About() {
   const [startPoint, setStartPoint] = useState("");
   const [endPoint, setEndPoint] = useState("");
   const api_key = import.meta.env.VITE_GEOCODE_API_KEY;
-  const [startLatLng, setStartLatLng] = useState(null);
-  const [endLatLng, setEndLatLng] = useState(null);
-  const [aqi, setAqi] = useState([]);
+  const [startLatLng,setStartLatLng] = useState({});
+  const [endLatLng,setEndLatLng] = useState({});
+  const [route, setRoute] = useState({})
+  const navigate = useNavigate();
+
 
   const findGeocode = async (location) => {
-    try {
-      const url = `https://api.opencagedata.com/geocode/v1/json?q=${location}&key=${api_key}&language=en&pretty=1`;
-      const response = await axios.get(url);
-      return response.data.results[0].geometry;
-    } catch (error) {
-      console.error("Geocode fetch error:", error);
-      return null;
-    }
+    const url = `https://api.opencagedata.com/geocode/v1/json?q=${location}&key=${api_key}&language=en&pretty=1`;
+    const response = await axios.get(url);
+    
+    // Return the geometry of the location (lat and lng)
+    return response.data.results[0].geometry;
   };
 
-  const fetchAqiData = async () => {
-    if (!startLatLng || !endLatLng) return;
 
+  const fetchAqiData = async () => {
+      
     try {
       const response = await axios.post('http://localhost:3000/api/routes/optimize', {
-        startPoint: startLatLng,
-        endPoint: endLatLng,
+        startPoint: {
+          lat: startLatLng.lat,
+          lng: startLatLng.lng
+        },
+        endPoint: {
+          lat: endLatLng.lat,
+          lng: endLatLng.lng
+        },
         mode: 'walking'
       }, {
         headers: {
@@ -107,23 +116,30 @@ export default function About() {
           'Accept': 'application/json'
         }
       });
-      setAqi(response.data);
+      
+      console.log('Optimized route response:', response.data);
+      setRoute(response.data);
     } catch (error) {
       console.error('Error optimizing route:', error);
     }
-  };
+}  
 
-  const handleSearch = async () => {
-    try {
-      const startGeo = await findGeocode(startPoint);
-      const endGeo = await findGeocode(endPoint);
-      setStartLatLng(startGeo);
-      setEndLatLng(endGeo);
-      if (startGeo && endGeo) fetchAqiData();
-    } catch (error) {
-      console.error("Geocoding error:", error);
-    }
-  };
+const handleSearch = async () => {
+  try {
+    const startLatLngResult = await findGeocode(startPoint);
+    const endLatLngResult = await findGeocode(endPoint);
+
+    setStartLatLng(startLatLngResult);
+    setEndLatLng(endLatLngResult);
+
+    console.log(startLatLng.lat);
+    
+    await fetchAqiData();
+    navigate('/bestRoute')
+  } catch (error) {
+    console.error("Error fetching geocode or AQI data:", error);
+  }
+};
 
   return (
     <div ref={ref} className="relative min-h-screen bg-black text-gray-100 flex items-center justify-center">
@@ -175,3 +191,4 @@ export default function About() {
     </div>
   );
 }
+
