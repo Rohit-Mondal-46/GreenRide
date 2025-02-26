@@ -1,12 +1,14 @@
 import map_char from "../assets/map_char.jpg";
+import loaderAnimation from "../assets/Loader.json";
 
 "use client";
 
 import { useContext, useEffect, useRef, useState } from "react";
 import { motion, useScroll } from "framer-motion";
-import axios from 'axios'
+import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import { RouteContext } from "../context/RouteContext";
+import Lottie from "lottie-react";
 
 function ParticleBackground() {
   const canvasRef = useRef(null);
@@ -81,6 +83,7 @@ export default function About() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const [startPoint, setStartPoint] = useState("");
   const [endPoint, setEndPoint] = useState("");
+  const [loading, setLoading] = useState(false);
   const api_key = import.meta.env.VITE_GEOCODE_API_KEY;
   const [startLatLng, setStartLatLng] = useState({});
   const [endLatLng, setEndLatLng] = useState({});
@@ -91,63 +94,54 @@ export default function About() {
   const findGeocode = async (location) => {
     const url = `https://api.opencagedata.com/geocode/v1/json?q=${location}&key=${api_key}&language=en&pretty=1`;
     const response = await axios.get(url);
-    return response.data.results[0].geometry; // Return the lat and lng
+    return response.data.results[0]?.geometry || null;
   };
 
-  // This function now exists outside of the useEffect
-  const fetchAqiData = async (startLatLng, endLatLng) => {
-    try {
-      console.log("Fetching AQI Data for:", startLatLng, endLatLng);
-
-      const response = await axios.post(
-        "http://localhost:3000/api/routes/optimize",
-        {
-          startPoint: {
-            lat: startLatLng.lat,
-            lng: startLatLng.lng,
-          },
-          endPoint: {
-            lat: endLatLng.lat,
-            lng: endLatLng.lng,
-          },
-          mode: "walking",
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          }
-        }
-      );
-
-      console.log("Optimized route response:", response.data);
-      setRoute(response.data);
-
-      // Navigate to the best route page
-      navigate("/bestRoute");
-    } catch (error) {
-      console.error("Error optimizing route:", error);
-      alert("Sorry, something went wrong or we are rate limited!");
-      setRoute({});
-    }
-  };
-
-  // Call fetchAqiData when startLatLng and endLatLng are set
   useEffect(() => {
     if (startLatLng.lat && endLatLng.lat) {
       fetchAqiData(startLatLng, endLatLng);
     }
-  }, [startLatLng, endLatLng]); // Runs only when lat/lng changes
+  }, [startLatLng, endLatLng]);
+
+  const fetchAqiData = async (startLatLng, endLatLng) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/routes/optimize",
+        {
+          startPoint: { lat: startLatLng.lat, lng: startLatLng.lng },
+          endPoint: { lat: endLatLng.lat, lng: endLatLng.lng },
+          mode: "walking",
+        },
+        {
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+        }
+      );
+
+      setRoute(response.data);
+      setLoading(false);
+      navigate("/bestRoute");
+    } catch (error) {
+      console.error("Error optimizing route:", error);
+      setLoading(false);
+    }
+  };
 
   const handleSearch = async () => {
+    setLoading(true);
     try {
       const startLatLngResult = await findGeocode(startPoint);
       const endLatLngResult = await findGeocode(endPoint);
+
+      if (!startLatLngResult || !endLatLngResult) {
+        setLoading(false);
+        return;
+      }
 
       setStartLatLng(startLatLngResult);
       setEndLatLng(endLatLngResult);
     } catch (error) {
       console.error("Error fetching geocode:", error);
+      setLoading(false);
     }
   };
 
@@ -155,52 +149,16 @@ export default function About() {
     <div ref={ref} className="relative min-h-screen bg-black text-gray-100 flex items-center justify-center">
       <ParticleBackground />
       <div className="relative z-10 max-w-6xl mx-auto px-6 py-24 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-        {/* Left Side - Input Fields and Button */}
         <div className="flex flex-col gap-4">
-          <motion.h1
-            className="text-4xl font-bold text-green-300"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
-          >
-            Find Your Route
-          </motion.h1>
-
-          <input
-            type="text"
-            placeholder="Start Point"
-            value={startPoint}
-            onChange={(e) => setStartPoint(e.target.value)}
-            className="w-full p-2 rounded-lg bg-black/50 border border-green-400 text-green-300 placeholder-gray-400 focus:outline-none"
-          />
-
-          <input
-            type="text"
-            placeholder="End Point"
-            value={endPoint}
-            onChange={(e) => setEndPoint(e.target.value)}
-            className="w-full p-2 rounded-lg bg-black/50 border border-green-400 text-green-300 placeholder-gray-400 focus:outline-none"
-          />
-
-          <button
-            onClick={handleSearch}
-            className="px-4 py-2 bg-green-500 hover:bg-green-700 text-black font-bold rounded-lg shadow-lg transition-all"
-          >
-            Search Route
-          </button>
+          <motion.h1 className="text-4xl font-bold text-green-300" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}>Find Your Route</motion.h1>
+          <input type="text" placeholder="Start Point" value={startPoint} onChange={(e) => setStartPoint(e.target.value)} className="w-full p-2 rounded-lg bg-black/50 border border-green-400 text-green-300 placeholder-gray-400 focus:outline-none" />
+          <input type="text" placeholder="End Point" value={endPoint} onChange={(e) => setEndPoint(e.target.value)} className="w-full p-2 rounded-lg bg-black/50 border border-green-400 text-green-300 placeholder-gray-400 focus:outline-none" />
+          <button onClick={handleSearch} className="px-4 py-2 bg-green-500 hover:bg-green-700 text-black font-bold rounded-lg shadow-lg transition-all">Search Route</button>
         </div>
-
-        {/* Right Side - Animated Image */}
-        <motion.div
-          className="flex justify-center items-center"
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1.1, opacity: 1 }}
-          transition={{ duration: 1 }}
-        >
-          <img src={map_char} alt="Map Character" className="w-[90%] h-auto max-w-xl" />
+        <motion.div className="flex justify-center items-center" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1.1, opacity: 1 }} transition={{ duration: 1 }}>
+          {loading ? <Lottie animationData={loaderAnimation} className="w-48 h-48" /> : <img src={map_char} alt="Map Character" className="w-[90%] h-auto max-w-xl" />}
         </motion.div>
       </div>
     </div>
   );
 }
-

@@ -9,7 +9,7 @@ const { Pool } = require('pg');
 // });
 const pool = new Pool({
   user: 'postgres',
-  password: 'Rohit@!#321',
+  password: 'Sahil12345',
   host: 'localhost',
   port: '5432',
   database: 'health_route_db',

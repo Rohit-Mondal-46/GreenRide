@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { signUp } from "../context/authService";
+import { signUp, googleSignUp } from "../context/authService"; // ✅ Import googleSignUp
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -73,10 +73,25 @@ export default function SignUp() {
     const newUser = await signUp(email, password);
     if (newUser && !newUser.error) {
       setUser(newUser);
-      alert("Sign-up successful! Redirecting...");
       navigate("/");
     } else {
       setError(newUser.error || "Something went wrong. Please try again.");
+    }
+
+    setLoading(false);
+  };
+
+  // ✅ Add handleGoogleSignUp function
+  const handleGoogleSignUp = async () => {
+    setError("");
+    setLoading(true);
+
+    const googleUser = await googleSignUp();
+    if (googleUser && !googleUser.error) {
+      setUser(googleUser);
+      navigate("/");
+    } else {
+      setError(googleUser.error || "Google sign-up failed. Try again.");
     }
 
     setLoading(false);
@@ -94,7 +109,8 @@ export default function SignUp() {
             </p>
 
             <div className="flex flex-col gap-3">
-              <SocialButton provider="google" text="Continue with Google" />
+              {/* ✅ Pass onClick event to trigger Google sign-up */}
+              <SocialButton provider="google" text="Continue with Google" onClick={handleGoogleSignUp} />
             </div>
 
             <div className="flex items-center gap-2 py-6 text-sm text-slate-600">
@@ -125,13 +141,17 @@ export default function SignUp() {
   );
 }
 
-function SocialButton({ provider, text }) {
+function SocialButton({ provider, text, onClick }) {
   const icons = {
     google: "https://www.svgrepo.com/show/475656/google-color.svg",
   };
 
   return (
-    <button className="flex items-center justify-center gap-2 border border-slate-300 bg-white p-2 text-sm sm:text-base font-medium text-black rounded-lg" aria-label={`Sign up with ${provider}`}> 
+    <button 
+      onClick={onClick} // ✅ Add onClick event
+      className="flex items-center justify-center gap-2 border border-slate-300 bg-white p-2 text-sm sm:text-base font-medium text-black rounded-lg" 
+      aria-label={`Sign up with ${provider}`}
+    > 
       <img src={icons[provider]} alt={provider} className="h-5 w-5" />
       {text}
     </button>

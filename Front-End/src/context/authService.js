@@ -20,11 +20,13 @@ const authErrors = {
   "auth/wrong-password": "Incorrect password. Please try again.",
   "auth/popup-closed-by-user": "Sign-in popup closed. Try again.",
   "auth/cancelled-popup-request": "Multiple popups blocked. Try again later.",
+  "auth/network-request-failed": "Network error. Please check your connection.",
+  "auth/too-many-requests": "Too many attempts. Try again later.",
   default: "An error occurred. Please try again.",
 };
 
 /**
- * 🔹 Sign Up User
+ * 🔹 Sign Up User (Email & Password)
  * @param {string} email 
  * @param {string} password 
  * @returns {Promise<Object>} User object or error message
@@ -40,7 +42,7 @@ export const signUp = async (email, password) => {
 };
 
 /**
- * 🔹 Log In User
+ * 🔹 Log In User (Email & Password)
  * @param {string} email 
  * @param {string} password 
  * @returns {Promise<Object>} User object or error message
@@ -65,7 +67,7 @@ export const logInWithGoogle = async () => {
     return { user: userCredential.user, error: null };
   } catch (error) {
     console.error("Google Sign In Error:", error);
-    
+
     // 🔹 Fallback to Redirect Sign-In if pop-ups are blocked
     if (error.code === "auth/popup-blocked" || error.code === "auth/cancelled-popup-request") {
       try {
@@ -79,6 +81,14 @@ export const logInWithGoogle = async () => {
 
     return { user: null, error: authErrors[error.code] || authErrors.default };
   }
+};
+
+/**
+ * 🔹 Google Sign-Up (Similar to Login, But Can Be Used Separately)
+ * @returns {Promise<Object>} User object or error message
+ */
+export const googleSignUp = async () => {
+  return logInWithGoogle(); // Directly using the existing Google login function
 };
 
 /**
