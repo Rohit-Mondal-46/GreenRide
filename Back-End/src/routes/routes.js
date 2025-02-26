@@ -55,7 +55,7 @@ router.get('/route/:id', async (req, res, next) => {
 router.post('/getAqiValue', async (req, res, next) => {
   try {
     const { location } = req.body;
-    // console.log(location);
+    console.log(location);
     
     // Validate required parameters
     if (!location?.lat || !location?.lng) {

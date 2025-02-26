@@ -9,6 +9,7 @@ import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import { RouteContext } from "../context/RouteContext";
 import Lottie from "lottie-react";
+import { findGeocode } from "../services/findCoords";
 
 function ParticleBackground() {
   const canvasRef = useRef(null);
@@ -91,11 +92,7 @@ export default function About() {
 
   const { setRoute } = useContext(RouteContext);
 
-  const findGeocode = async (location) => {
-    const url = `https://api.opencagedata.com/geocode/v1/json?q=${location}&key=${api_key}&language=en&pretty=1`;
-    const response = await axios.get(url);
-    return response.data.results[0]?.geometry || null;
-  };
+  findGeocode()
 
   useEffect(() => {
     if (startLatLng.lat && endLatLng.lat) {
