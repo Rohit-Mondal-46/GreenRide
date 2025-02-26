@@ -2,11 +2,11 @@ import map_char from "../assets/map_char.jpg";
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { motion, useScroll } from "framer-motion";
 import axios from 'axios'
 import { useNavigate } from "react-router-dom";
-
+import { RouteContext } from "../context/RouteContext";
 
 function ParticleBackground() {
   const canvasRef = useRef(null);
@@ -82,64 +82,74 @@ export default function About() {
   const [startPoint, setStartPoint] = useState("");
   const [endPoint, setEndPoint] = useState("");
   const api_key = import.meta.env.VITE_GEOCODE_API_KEY;
-  const [startLatLng,setStartLatLng] = useState({});
-  const [endLatLng,setEndLatLng] = useState({});
-  const [route, setRoute] = useState({})
+  const [startLatLng, setStartLatLng] = useState({});
+  const [endLatLng, setEndLatLng] = useState({});
   const navigate = useNavigate();
 
+  const { setRoute } = useContext(RouteContext);
 
   const findGeocode = async (location) => {
     const url = `https://api.opencagedata.com/geocode/v1/json?q=${location}&key=${api_key}&language=en&pretty=1`;
     const response = await axios.get(url);
-    
-    // Return the geometry of the location (lat and lng)
-    return response.data.results[0].geometry;
+    return response.data.results[0].geometry; // Return the lat and lng
   };
 
-
-  const fetchAqiData = async () => {
-      
+  // This function now exists outside of the useEffect
+  const fetchAqiData = async (startLatLng, endLatLng) => {
     try {
-      const response = await axios.post('http://localhost:3000/api/routes/optimize', {
-        startPoint: {
-          lat: startLatLng.lat,
-          lng: startLatLng.lng
+      console.log("Fetching AQI Data for:", startLatLng, endLatLng);
+
+      const response = await axios.post(
+        "http://localhost:3000/api/routes/optimize",
+        {
+          startPoint: {
+            lat: startLatLng.lat,
+            lng: startLatLng.lng,
+          },
+          endPoint: {
+            lat: endLatLng.lat,
+            lng: endLatLng.lng,
+          },
+          mode: "walking",
         },
-        endPoint: {
-          lat: endLatLng.lat,
-          lng: endLatLng.lng
-        },
-        mode: 'walking'
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          }
         }
-      });
-      
-      console.log('Optimized route response:', response.data);
+      );
+
+      console.log("Optimized route response:", response.data);
       setRoute(response.data);
+
+      // Navigate to the best route page
+      navigate("/bestRoute");
     } catch (error) {
-      console.error('Error optimizing route:', error);
+      console.error("Error optimizing route:", error);
+      alert("Sorry, something went wrong or we are rate limited!");
+      setRoute({});
     }
-}  
+  };
 
-const handleSearch = async () => {
-  try {
-    const startLatLngResult = await findGeocode(startPoint);
-    const endLatLngResult = await findGeocode(endPoint);
+  // Call fetchAqiData when startLatLng and endLatLng are set
+  useEffect(() => {
+    if (startLatLng.lat && endLatLng.lat) {
+      fetchAqiData(startLatLng, endLatLng);
+    }
+  }, [startLatLng, endLatLng]); // Runs only when lat/lng changes
 
-    setStartLatLng(startLatLngResult);
-    setEndLatLng(endLatLngResult);
+  const handleSearch = async () => {
+    try {
+      const startLatLngResult = await findGeocode(startPoint);
+      const endLatLngResult = await findGeocode(endPoint);
 
-    console.log(startLatLng.lat);
-    
-    await fetchAqiData();
-    navigate('/bestRoute')
-  } catch (error) {
-    console.error("Error fetching geocode or AQI data:", error);
-  }
-};
+      setStartLatLng(startLatLngResult);
+      setEndLatLng(endLatLngResult);
+    } catch (error) {
+      console.error("Error fetching geocode:", error);
+    }
+  };
 
   return (
     <div ref={ref} className="relative min-h-screen bg-black text-gray-100 flex items-center justify-center">
@@ -193,4 +203,4 @@ const handleSearch = async () => {
     </div>
   );
 }
-}
+
