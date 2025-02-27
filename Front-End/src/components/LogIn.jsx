@@ -31,7 +31,6 @@ export default function Login() {
 
     if (loggedInUser && !loggedInUser.error) {
       setUser(loggedInUser.user);
-      alert("Successfully logged in!");
       navigate("/");
     } else {
       setError(loggedInUser.error || "Login failed");
@@ -47,7 +46,6 @@ export default function Login() {
 
     if (googleUser && !googleUser.error) {
       setUser(googleUser.user);
-      alert("Successfully logged in with Google!");
       navigate("/");
     } else {
       setError(googleUser.error || "Google login failed");
@@ -83,15 +81,17 @@ export default function Login() {
           }}
         />
       ))}
-  
+
       <div className="bg-black/50 flex items-center justify-center min-h-screen px-4 sm:px-6 relative z-10">
-        <div className="relative p-6 sm:p-8 w-full max-w-md"> {/* Changed from max-w-lg to max-w-md */}
+        <div className="relative p-6 sm:p-8 w-full max-w-md">
           <div className="bg-white rounded-lg shadow p-5 sm:p-6">
-            <h3 className="text-2xl font-medium text-center mb-4">Login to your account</h3>
+            <h3 className="text-2xl font-medium text-center mb-4">
+              Login to your account
+            </h3>
             <p className="text-sm text-center text-slate-600 mb-6">
               You must be logged in to access your account.
             </p>
-  
+
             {/* Social Login Options */}
             <div className="flex flex-col gap-3">
               <button
@@ -99,17 +99,21 @@ export default function Login() {
                 onClick={handleGoogleLogin}
                 disabled={loading}
               >
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="h-5 w-5" />
+                <img
+                  src="https://www.svgrepo.com/show/475656/google-color.svg"
+                  alt="Google"
+                  className="h-5 w-5"
+                />
                 Continue with Google
               </button>
             </div>
-  
+
             <div className="flex items-center gap-2 py-6 text-sm text-slate-600">
               <div className="h-px w-full bg-slate-200"></div>
               OR
               <div className="h-px w-full bg-slate-200"></div>
             </div>
-  
+
             {/* Email & Password Login */}
             {error && <p className="text-red-500 text-center">{error}</p>}
             <form onSubmit={handleSubmit} className="w-full">
@@ -132,7 +136,10 @@ export default function Login() {
                 placeholder="Password"
               />
               <p className="text-sm sm:text-base text-gray-500 mt-2">
-                <a href="/forgot-password" className="text-blue-800 hover:text-blue-600">
+                <a
+                  href="/forgot-password"
+                  className="text-blue-800 hover:text-blue-600"
+                >
                   Reset your password?
                 </a>
               </p>
@@ -144,9 +151,12 @@ export default function Login() {
                 {loading ? "Signing in..." : "Continue"}
               </button>
             </form>
-  
+
             <p className="mt-6 text-center text-sm sm:text-base text-slate-600">
-              Don't have an account? <a href="/signup" className="text-[#4285f4] font-medium">Sign up</a>
+              Don't have an account?{" "}
+              <a href="/signup" className="text-[#4285f4] font-medium">
+                Sign up
+              </a>
             </p>
           </div>
         </div>
