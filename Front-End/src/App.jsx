@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
@@ -9,18 +10,37 @@ import SignUp from "./components/SignUp";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { AppContextProvider } from "./context/AppContext";
 import BestRouteVisualization from "./pages/BestRouteVisualization";
+import FullScreenLoader from "./components/Loader";
 
 // Protect routes that require authentication
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  if (loading) return <p className="text-white text-center">Loading...</p>;
+  if (loading) return <FullScreenLoader />; // Use loader instead of "Loading..."
 
   return user ? children : <Navigate to="/login" state={{ from: location }} />;
 }
 
 export default function App() {
+  const [loading, setLoading] = useState(true);
+
+  // Show loader on first load or refresh
+  useEffect(() => {
+    document.body.style.overflow = "hidden"; // Prevent scrolling during loading
+
+    const timer = setTimeout(() => {
+      setLoading(false);
+      document.body.style.overflow = "auto"; // Restore scrolling after loading
+    }, 700); // Increased duration for smoother experience
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return <FullScreenLoader />; // Ensures full-screen loader appears
+  }
+
   return (
     <AuthProvider>
       <AppContextProvider>
