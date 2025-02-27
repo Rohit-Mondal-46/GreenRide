@@ -145,7 +145,7 @@ const getAQIDataForRoute = async (route) => {
   try {
     // Sample points along the route
     const points = sampleRoutePoints(route);
-    console.log('Sampled points:', points);
+    // console.log('Sampled points:', points);
     
     // Fetch AQI data for each point
     const aqiPromises = points.map(point => {

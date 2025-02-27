@@ -92,7 +92,7 @@ export default function About() {
 
   const { setRoute } = useContext(RouteContext);
 
-  findGeocode()
+  // findGeocode()
 
   useEffect(() => {
     if (startLatLng.lat && endLatLng.lat) {
@@ -113,8 +113,8 @@ export default function About() {
           headers: { "Content-Type": "application/json", Accept: "application/json" },
         }
       );
-
-      setRoute(response.data);
+      console.log("fetchAqi: ",response.data);
+      setRoute(response.data)
       setLoading(false);
       navigate("/bestRoute");
     } catch (error) {

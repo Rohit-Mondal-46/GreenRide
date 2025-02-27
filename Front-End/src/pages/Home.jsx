@@ -5,8 +5,27 @@ import MapComponent from "../components/MapComponent";
 import CallToAction from "../components/CallToAction";
 import { motion } from "framer-motion";
 import mountainride from "../assets/mountainride.jpg"; // Add
+import { useContext, useEffect } from "react";
+import { LocationContext } from "../context/LocationContext";
 
 export default function Home() {
+  const { setCurrLocation } = useContext(LocationContext);
+  useEffect(() => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            setCurrLocation({ latitude, longitude });
+          },
+          (error) => {
+            console.error("Error fetching location:", error);
+          },
+          { enableHighAccuracy: true, timeout: 5000, maximumAge: 10000 }
+        );
+      } else {
+        console.error("Geolocation is not supported by this browser.");
+      }
+    }, []);
   return (
     <div>
       {/* Hero Section with Animation */}

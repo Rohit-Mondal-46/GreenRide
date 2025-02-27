@@ -4,12 +4,15 @@ import { AppContextProvider } from "./context/AppContext.jsx"; // ✅ Fixed impo
 import App from "./App.jsx";
 import "./index.css";
 import { RouteProvider } from "./context/RouteContext.jsx";
+import { LocationProvider } from "./context/LocationContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <AppContextProvider>
       <RouteProvider>
-        <App />
+        <LocationProvider>
+          <App />
+        </LocationProvider>
       </RouteProvider>
     </AppContextProvider>
   </BrowserRouter>

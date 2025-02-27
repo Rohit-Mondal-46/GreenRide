@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { logIn, logInWithGoogle } from "../context/authService";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { LocationContext } from "../context/LocationContext";
+
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -12,6 +14,28 @@ export default function Login() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
+  const { setCurrLocation } = useContext(LocationContext);
+  
+
+
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setCurrLocation({ latitude, longitude });
+        },
+        (error) => {
+          console.error("Error fetching location:", error);
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 10000 }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  }, []);
+
 
   // Redirect if already logged in
   useEffect(() => {
