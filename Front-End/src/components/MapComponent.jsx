@@ -13,7 +13,7 @@ export default function MapComponent() {
   const [aqi, setAqi] = useState(null);
   const [error, setError] = useState(null);
   const { currLocation } = useContext(LocationContext);
-
+  const backend_api = import.meta.env.VITE_API_URL || 'http://localhost:3000'
   // Function to handle reverse geocoding of the current location coordinates
   const reverseGeoCode = async () => {
     if (currLocation && currLocation.latitude && currLocation.longitude) {
@@ -50,7 +50,7 @@ export default function MapComponent() {
       console.log("Geocode:", geocode);
 
       const response = await axios.post(
-        "http://localhost:3000/api/routes/getAqiValue",
+        `${backend_api}/api/routes/getAqiValue`,
         {
           location: { lat: geocode.lat, lng: geocode.lng },
         },

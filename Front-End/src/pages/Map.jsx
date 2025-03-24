@@ -91,7 +91,7 @@ export default function About() {
   const navigate = useNavigate();
 
   const { setRoute } = useContext(RouteContext);
-
+  const backend_api = import.meta.env.VITE_API_URL || 'http://localhost:3000'
   // findGeocode()
 
   useEffect(() => {
@@ -103,7 +103,7 @@ export default function About() {
   const fetchAqiData = async (startLatLng, endLatLng) => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/routes/optimize",
+        `${backend_api}/api/routes/optimize`,
         {
           startPoint: { lat: startLatLng.lat, lng: startLatLng.lng },
           endPoint: { lat: endLatLng.lat, lng: endLatLng.lng },
