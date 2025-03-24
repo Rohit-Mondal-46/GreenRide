@@ -13,7 +13,11 @@ const PORT = process.env.PORT || 3000;
 
 // 🌍 Middleware
 app.use(helmet()); // Security headers
-app.use(cors()); // Enable CORS
+app.use(cors({
+  origin: ['https://green-ride-one.vercel.app/'],
+  methods: ['GET', 'POST'],
+  credentials: true
+}));// Enable CORS
 app.use(express.json()); // Parse JSON requests
 app.use(morgan("dev")); // Logging
 
@@ -37,14 +41,9 @@ app.use((err, req, res, next) => {
 });
 
 //  Initialize Database & Start Server
-(async () => {
-  try {
-    // await initializeDatabase();
-    app.listen(PORT, () => {
-      console.log(`[✅] Server is running on port ${PORT}`);
-    });
-  } catch (error) {
-    // console.error(`[ERROR] Database initialization failed: ${error.message}`);
-    process.exit(1);
-  }
-})();
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`[✅] Server is running on port ${PORT}`);
+  });
+}
+module.exports = app;
