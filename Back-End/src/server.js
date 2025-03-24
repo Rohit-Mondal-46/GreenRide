@@ -14,8 +14,8 @@ const PORT = process.env.PORT || 3000;
 // 🌍 Middleware
 app.use(helmet()); // Security headers
 app.use(cors({
-  origin: ['https://green-ride-one.vercel.app/'],
-  methods: ['GET', 'POST'],
+  origin: ['https://green-ride-one.vercel.app'],
+  methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true
 }));// Enable CORS
 app.use(express.json()); // Parse JSON requests

@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { RouteContext } from "../context/RouteContext";
 import Lottie from "lottie-react";
 import { findGeocode } from "../services/findCoords";
+import { log } from "console";
 
 function ParticleBackground() {
   const canvasRef = useRef(null);
@@ -92,6 +93,8 @@ export default function About() {
 
   const { setRoute } = useContext(RouteContext);
   const backend_api = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+  console.log("backend api url:",backend_api);
+  
   // findGeocode()
 
   useEffect(() => {
