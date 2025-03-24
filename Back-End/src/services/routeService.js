@@ -1,5 +1,7 @@
 const axios = require('axios');
-const { pool } = require('../config/database');
+// const { pool } = require('../config/database');
+const polyline = require('polyline');
+const supabase = require('../config/supabaseClient');
 
 const GRAPHHOPPER_BASE_URL = 'https://graphhopper.com/api/1';
 const OPENWEATHERMAP_BASE_URL = 'https://api.waqi.info/feed/geo:';
@@ -206,54 +208,12 @@ const calculateHealthScore = (aqiData, mode) => {
   return averageAQI * (MODE_WEIGHTS[mode] || 1.0);
 };
 
-// Polyline decoder function
-const decodePolyline = (encoded, multiplier = 1e5) => { 
-  const points = [];
-  let index = 0;
-  let lat = 0;
-  let lng = 0;
-
-  while (index < encoded.length) {
-    let shift = 0;
-    let result = 0;
-    let b; // Declare `b` at the start of each loop scope
-
-    // Decode latitude
-    do {
-      b = encoded.charCodeAt(index++) - 63;  // Use `b` inside the loop
-      result |= (b & 0x1f) << shift;
-      shift += 5;
-    } while (b >= 0x20);  // Fix breaking condition
-    lat += ((result & 1) ? ~(result >> 1) : (result >> 1));
-
-    shift = 0;
-    result = 0;
-    // Decode longitude
-    do {
-      b = encoded.charCodeAt(index++) - 63;  // Use `b` inside the loop
-      result |= (b & 0x1f) << shift;
-      shift += 5;
-    } while (b >= 0x20);  // Fix breaking condition
-    lng += ((result & 1) ? ~(result >> 1) : (result >> 1));
-
-    points.push({
-      lat: lat / multiplier,
-      lng: lng / multiplier
-    });
-
-    // Add detailed logging to trace decoding process
-    // console.log(`Decoded point: [${lat / multiplier}, ${lng / multiplier}] (lat: ${lat}, lng: ${lng})`);
-  }
-
-  // console.log("Final decoded points:", points);
-  return points;
-};
 
 
 
 const sampleRoutePoints = (route) => {
   // Decode the polyline
-  const allPoints = decodePolyline(route.points, route.points_encoded_multiplier || 1e5);
+  const allPoints = polyline.decode(route.points);
   
   // Calculate total distance
   const totalDistance = route.distance; // in meters
@@ -284,31 +244,39 @@ const sampleRoutePoints = (route) => {
 
 
 const getCachedRoute = async (startPoint, endPoint, mode) => {
-  const client = await pool.connect();
   try {
-    const result = await client.query(
-      `SELECT * FROM routes 
-       WHERE start_lat = $1 AND start_lng = $2
-       AND end_lat = $3 AND end_lng = $4
-       AND mode = $5
-       AND created_at > NOW() - INTERVAL '1 hour'
-       ORDER BY health_score
-       LIMIT 1`,  // Ensure we get only one cached route
-      [startPoint.lat, startPoint.lng, endPoint.lat, endPoint.lng, mode]
-    );
-    
+    const oneHourAgo = new Date(Date.now() - 3600 * 1000).toISOString(); // Convert the date to ISO format (UTC)
+
+    const { data, error } = await supabase
+      .from('routes')
+      .select('*')
+      .eq('start_lat', startPoint.lat)
+      .eq('start_lng', startPoint.lng)
+      .eq('end_lat', endPoint.lat)
+      .eq('end_lng', endPoint.lng)
+      .eq('mode', mode)
+      .gt('created_at', oneHourAgo)  // Use the ISO-formatted timestamp
+      .order('health_score', { ascending: true })
+      .limit(1);  // Limit to 1 record
+
+    if (error) {
+      console.error('Error fetching cached route:', error);
+      return null;
+    }
+
     // Return the first route if available, else return null
-    return result.rows.length > 0 ? result.rows[0] : null;
-  } finally {
-    client.release();
+    return data && data.length > 0 ? data[0] : null;
+  } catch (err) {
+    console.error('Database query error:', err);
+    return null;
   }
 };
 
 
+
+
 const cacheRoute = async (route, startPoint, endPoint, mode) => {
-  const client = await pool.connect();
   try {
-    // Create a clean route object without circular references
     const routeData = {
       distance: route.distance,
       weight: route.weight,
@@ -325,33 +293,51 @@ const cacheRoute = async (route, startPoint, endPoint, mode) => {
       snapped_waypoints: route.snapped_waypoints
     };
 
-    await client.query(
-      `INSERT INTO routes (start_lat, start_lng, end_lat, end_lng, route_data, aqi_data, health_score, mode)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-      [
-        startPoint.lat, startPoint.lng,
-        endPoint.lat, endPoint.lng,
-        JSON.stringify(routeData),
-        JSON.stringify(route.aqiData || []),
-        route.healthScore,
-        mode
-      ]
-    );
-  } finally {
-    client.release();
+    const { error } = await supabase
+      .from('routes')
+      .insert([
+        {
+          start_lat: startPoint.lat,
+          start_lng: startPoint.lng,
+          end_lat: endPoint.lat,
+          end_lng: endPoint.lng,
+          route_data: routeData,  // Supabase will handle JSON automatically
+          aqi_data: route.aqiData || [],
+          health_score: route.healthScore,
+          mode: mode
+        }
+      ]);
+
+    if (error) {
+      console.error('Error caching route:', error);
+    }
+  } catch (err) {
+    console.error('Database insert error:', err);
   }
 };
+
 
 
 const getRouteById = async (id) => {
-  const client = await pool.connect();
   try {
-    const result = await client.query('SELECT * FROM routes WHERE id = $1', [id]);
-    return result.rows[0];
-  } finally {
-    client.release();
+    const { data, error } = await supabase
+      .from('routes')
+      .select('*')
+      .eq('id', id)
+      .single();  // Fetch a single record
+
+    if (error) {
+      console.error('Error fetching route by ID:', error);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error('Database query error:', err);
+    return null;
   }
 };
+
 
 
 module.exports = {

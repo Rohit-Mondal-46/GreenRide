@@ -113,7 +113,7 @@ export default function About() {
           headers: { "Content-Type": "application/json", Accept: "application/json" },
         }
       );
-      console.log("fetchAqi: ",response.data);
+      console.log("fetchedAqi: ",response.data);
       setRoute(response.data)
       setLoading(false);
       navigate("/bestRoute");
